@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Tracker Chat Box</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font: 13px Helvetica, Arial;
+    }
+
+    form {
+      background: #000;
+      padding: 3px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+
+    form input {
+      border: 0;
+      padding: 10px;
+      width: 90%;
+      margin-right: .5%;
+    }
+
+    form button {
+      width: 9%;
+      background: rgb(130, 224, 255);
+      border: none;
+      padding: 10px;
+    }
+
+    #messages {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #messages li {
+      padding: 5px 10px;
+    }
+
+    #messages li:nth-child(odd) {
+      background: #eee;
+    }
+  </style>
+</head>
+
+<body>
+  <ul id="messages"></ul>
+  <form action="">
+    <input id="m" autocomplete="off" />
+    <button>Send</button>
+  </form>
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>  
+<script>
+  $(function() {
+    var socket = io('http://localhost:3000');
+    const userName = prompt('enter your username')
+
+    socket.emit('userName', userName)
+
+    $('form').submit(function() {
+      $('#messages').append($('<li>').text(`${userName}: ${$('#m').val()}`));
+      socket.emit('chat message', `${userName}: ${$('#m').val()}`);
+      $('#m').val('');
+      return false;
+    });
+
+    socket.on('chat message', function(msg) {
+      $('#messages').append($('<li>').text(msg));
+    });
+
+    socket.on('message', function(msg) {
+      $('.messages').append(`<li>${msg}</li>`)
+    });
+
+    $('form').on('keyup', function() {
+      socket.emit('typing', 'Someone is typing')
+    })
+
+    socket.on('typing', function(msg) {
+      $('#messages').append($('<li>').text(msg));
+    })
+  
+  });
+</script>
+</body>
+
+</html>
